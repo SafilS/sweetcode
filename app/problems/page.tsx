@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bookmark, Filter, LockKeyhole, Search } from "lucide-react";
+import { Bookmark, Filter, Search, Check } from "lucide-react";
 import type { ProgressStatus } from "@/lib/problems";
 import { getProblems, getTags } from "@/lib/problems";
 import { isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
-
 
 const difficulties = ["Easy", "Medium", "Hard"];
 const statusLabels: Record<ProgressStatus, string> = {
@@ -15,11 +14,12 @@ const statusLabels: Record<ProgressStatus, string> = {
   REVISITING: "Revisiting"
 };
 
-function pageHref(params: { difficulty?: string; tag?: string; q?: string; page?: string }, page: number) {
+function pageHref(params: { difficulty?: string; tag?: string; q?: string; premium?: string; page?: string }, page: number) {
   const nextParams = new URLSearchParams();
   if (params.q) nextParams.set("q", params.q);
   if (params.difficulty) nextParams.set("difficulty", params.difficulty);
   if (params.tag) nextParams.set("tag", params.tag);
+  if (params.premium) nextParams.set("premium", params.premium);
   if (page > 1) nextParams.set("page", String(page));
   const query = nextParams.toString();
   return query ? `/problems?${query}` : "/problems";
@@ -28,7 +28,7 @@ function pageHref(params: { difficulty?: string; tag?: string; q?: string; page?
 export default async function ProblemsPage({
   searchParams
 }: {
-  searchParams: Promise<{ difficulty?: string; tag?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ difficulty?: string; tag?: string; q?: string; premium?: string; page?: string }>;
 }) {
   const user = isSupabaseConfigured()
     ? (await (await createClient()).auth.getUser()).data.user
@@ -45,24 +45,27 @@ export default async function ProblemsPage({
   const lastVisible = Math.min(page * problemPage.pageSize, total);
 
   return (
-    <main className="page-shell">
+    <main className="page-shell problems-catalog">
+      <div className="cosmic-grid"></div>
+      <div className="glow-orb problems-orb-1"></div>
+
       <section className="page-heading">
         <div>
-          <p className="eyebrow">Catalog</p>
+          <p className="eyebrow">Interactive Library</p>
           <h1>Problems</h1>
         </div>
-        <p>
-          {firstVisible}-{lastVisible} of {total} problems
+        <p className="problems-count">
+          Showing <span>{firstVisible}-{lastVisible}</span> of <span>{total}</span> problems
         </p>
       </section>
 
-      <form className="filters">
+      <form className="filters glass-panel">
         <label className="search-field">
-          <Search aria-hidden="true" size={18} />
+          <Search aria-hidden="true" size={18} className="filter-icon" />
           <input name="q" placeholder="Search title or number" defaultValue={params.q ?? ""} />
         </label>
-        <label>
-          <Filter aria-hidden="true" size={18} />
+        <label className="select-field">
+          <Filter aria-hidden="true" size={18} className="filter-icon" />
           <select name="difficulty" defaultValue={params.difficulty ?? ""}>
             <option value="">All difficulties</option>
             {difficulties.map((difficulty) => (
@@ -72,8 +75,8 @@ export default async function ProblemsPage({
             ))}
           </select>
         </label>
-        <label>
-          <Filter aria-hidden="true" size={18} />
+        <label className="select-field">
+          <Filter aria-hidden="true" size={18} className="filter-icon" />
           <select name="tag" defaultValue={params.tag ?? ""}>
             <option value="">All tags</option>
             {tags.map((tag: { name: string; slug: string }) => (
@@ -83,34 +86,47 @@ export default async function ProblemsPage({
             ))}
           </select>
         </label>
-        <button className="primary-button" type="submit">
-          Apply
+        <label className="select-field">
+          <Filter aria-hidden="true" size={18} className="filter-icon" />
+          <select name="premium" defaultValue={params.premium ?? ""}>
+            <option value="">All problems</option>
+            <option value="true">Premium Only 👑</option>
+          </select>
+        </label>
+        <button className="primary-button filter-submit-btn" type="submit">
+          Apply Filters
         </button>
       </form>
 
-      <section className="problem-list" aria-label="Problems">
+      <section className="problem-list glass-panel" aria-label="Problems">
         {problems.map((problem) => (
-          <Link className="problem-row" href={`/problems/${problem.slug}`} key={problem.id}>
-            <span className="problem-number">{problem.problem_number}</span>
+          <Link className={`problem-row ${problem.is_premium ? "is-premium-row" : ""} ${problem.user_status === "SOLVED" ? "is-solved-row" : ""}`} href={`/problems/${problem.slug}`} key={problem.id}>
+            <div className="status-col">
+              {problem.user_status === "SOLVED" ? (
+                <Check aria-hidden="true" size={15} className="solved-tick-icon" />
+              ) : null}
+            </div>
+            <span className="problem-number">{parseInt(problem.problem_number, 10)}</span>
             <span className="problem-title">{problem.title}</span>
             <span className={`difficulty ${problem.difficulty.toLowerCase()}`}>
               {problem.difficulty.toLowerCase()}
             </span>
-            {problem.is_premium ? (
-              <span className="premium-badge">
-                <LockKeyhole aria-hidden="true" size={14} />
-                Premium
-              </span>
-            ) : (
-              <span />
-            )}
+            <div className="premium-col">
+              {problem.is_premium ? (
+                <span className="premium-emoji" title="Premium (Unlocked Free)">
+                  👑
+                </span>
+              ) : (
+                <span />
+              )}
+            </div>
             <span className="row-learning-badges">
               {problem.is_bookmarked ? (
                 <span className="bookmark-badge" title="Bookmarked">
-                  <Bookmark aria-hidden="true" size={14} />
+                  <Bookmark aria-hidden="true" size={15} />
                 </span>
               ) : null}
-              {problem.user_status && problem.user_status !== "NOT_STARTED" ? (
+              {problem.user_status && problem.user_status !== "SOLVED" && problem.user_status !== "NOT_STARTED" ? (
                 <span className={`status-badge ${problem.user_status.toLowerCase()}`}>
                   {statusLabels[problem.user_status]}
                 </span>
@@ -130,7 +146,7 @@ export default async function ProblemsPage({
           ) : (
             <span className="ghost-button disabled">Previous</span>
           )}
-          <span>
+          <span className="pagination-info">
             Page {page} of {totalPages}
           </span>
           {page < totalPages ? (

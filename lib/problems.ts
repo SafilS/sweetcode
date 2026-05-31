@@ -178,7 +178,7 @@ function normalizePage(value?: string) {
   return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
 }
 
-export const getProblems = cache(async (filters: { difficulty?: string; tag?: string; q?: string; page?: string }): Promise<ProblemListResult> => {
+export const getProblems = cache(async (filters: { difficulty?: string; tag?: string; q?: string; premium?: string; page?: string }): Promise<ProblemListResult> => {
   const pageSize = 100;
   const page = normalizePage(filters.page);
 
@@ -187,7 +187,8 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
       .map(sampleToListItem)
       .filter((problem) => !filters.difficulty || problem.difficulty === filters.difficulty.toUpperCase())
       .filter((problem) => !filters.q || `${problem.problem_number} ${problem.title}`.toLowerCase().includes(filters.q.toLowerCase()))
-      .filter((problem) => !filters.tag || problem.problem_tags?.some((tag) => tag.tags.slug === filters.tag));
+      .filter((problem) => !filters.tag || problem.problem_tags?.some((tag) => tag.tags.slug === filters.tag))
+      .filter((problem) => !filters.premium || filters.premium !== "true" || problem.is_premium === true);
 
     const from = (page - 1) * pageSize;
     return {
@@ -206,7 +207,7 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
   const supabase = await createClient();
-  const cacheKey = `problems:list:raw:${filters.difficulty ?? ""}:${filters.tag ?? ""}:${filters.q ?? ""}:${page}`;
+  const cacheKey = `problems:list:raw:${filters.difficulty ?? ""}:${filters.tag ?? ""}:${filters.q ?? ""}:${filters.premium ?? ""}:${page}`;
   const redis = getRedisClient();
   let cachedData: { items: ProblemListItem[]; total: number } | null = null;
 
@@ -245,6 +246,10 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
 
     if (filters.q) {
       query = query.or(`title.ilike.%${filters.q}%,problem_number.ilike.%${filters.q}%`);
+    }
+
+    if (filters.premium === "true") {
+      query = query.eq("is_premium", true);
     }
 
     const { data, error, count } = await query;
@@ -745,4 +750,383 @@ export const getDiscussionReplies = async (
     };
   });
 };
+
+export type StudyPlan = {
+  slug: string;
+  title: string;
+  description: string;
+  limit: number;
+  tags: string[];
+  color: string;
+};
+
+export const STUDY_PLANS: Record<string, StudyPlan> = {
+  "leetcode-75": {
+    slug: "leetcode-75",
+    title: "LeetCode 75",
+    description: "A structured, highly recommended path covering core data structures, trees, DP, and graphs.",
+    limit: 75,
+    tags: ["array", "two-pointers", "sliding-window", "hash-table", "stack", "linked-list", "tree", "graph", "binary-search", "dynamic-programming"],
+    color: "cyan"
+  },
+  "top-150": {
+    slug: "top-150",
+    title: "Top Interview 150",
+    description: "The ultimate compilation of classic technical questions asked in major company interviews.",
+    limit: 150,
+    tags: ["array", "two-pointers", "sliding-window", "hash-table", "stack", "linked-list", "tree", "graph", "binary-search", "dynamic-programming", "backtracking", "divide-and-conquer", "heap", "intervals", "greedy", "math", "bit-manipulation"],
+    color: "purple"
+  },
+  "dp-classics": {
+    slug: "dp-classics",
+    title: "Dynamic Programming Classics",
+    description: "Master bottom-up and top-down DP with selected classical optimization problems.",
+    limit: 25,
+    tags: ["dynamic-programming"],
+    color: "indigo"
+  }
+};
+
+export type StudyPlanData = {
+  plan: StudyPlan;
+  problems: ProblemListItem[];
+  solvedCount: number;
+};
+
+const LEETCODE_75_TITLES = [
+  "Merge Strings Alternately",
+  "Greatest Common Divisor of Strings",
+  "Kids With the Greatest Number of Candies",
+  "Can Place Flowers",
+  "Reverse Vowels of a String",
+  "Reverse Words in a String",
+  "Product of Array Except Self",
+  "Increasing Triplet Subsequence",
+  "String Compression",
+  "Move Zeroes",
+  "Is Subsequence",
+  "Container With Most Water",
+  "Max Number of K-Sum Pairs",
+  "Maximum Average Subarray I",
+  "Maximum Number of Vowels in a Substring of Given Length",
+  "Max Consecutive Ones III",
+  "Longest Subarray of 1's After Deleting One Element",
+  "Find the Highest Altitude",
+  "Find Pivot Index",
+  "Find the Difference of Two Arrays",
+  "Unique Number of Occurrences",
+  "Determine if Two Strings Are Close",
+  "Equal Row and Column Pairs",
+  "Removing Stars From a String",
+  "Asteroid Collision",
+  "Decode String",
+  "Number of Recent Calls",
+  "Dota2 Senate",
+  "Delete the Middle Node of a Linked List",
+  "Odd Even Linked List",
+  "Reverse Linked List",
+  "Maximum Twin Sum of a Linked List",
+  "Maximum Depth of Binary Tree",
+  "Leaf-Similar Trees",
+  "Count Good Nodes in Binary Tree",
+  "Path Sum III",
+  "Longest ZigZag Path in a Binary Tree",
+  "Lowest Common Ancestor of a Binary Tree",
+  "Binary Tree Right Side View",
+  "Maximum Level Sum of a Binary Tree",
+  "Search in a Binary Search Tree",
+  "Delete Node in a BST",
+  "Keys and Rooms",
+  "Number of Provinces",
+  "Reorder Routes to Make All Paths Lead to the City Zero",
+  "Evaluate Division",
+  "Nearest Exit from Entrance in Maze",
+  "Rotting Oranges",
+  "Kth Largest Element in an Array",
+  "Smallest Number in Infinite Set",
+  "Maximum Subsequence Score",
+  "Total Cost to Hire K Workers",
+  "Guess Number Higher or Lower",
+  "Successful Pairs of Spells and Potions",
+  "Find Peak Element",
+  "Koko Eating Bananas",
+  "Letter Combinations of a Phone Number",
+  "Combination Sum III",
+  "N-th Tribonacci Number",
+  "Min Cost Climbing Stairs",
+  "House Robber",
+  "Domino and Tromino Tiling",
+  "Unique Paths",
+  "Longest Common Subsequence",
+  "Best Time to Buy and Sell Stock with Transaction Fee",
+  "Edit Distance",
+  "Counting Bits",
+  "Single Number",
+  "Minimum Flips to Make a OR b Equal to c",
+  "Implement Trie (Prefix Tree)",
+  "Search Suggestions System",
+  "Non-overlapping Intervals",
+  "Minimum Number of Arrows to Burst Balloons",
+  "Daily Temperatures",
+  "Online Stock Span"
+];
+
+const TOP_150_TITLES = [
+  "Merge Sorted Array",
+  "Remove Element",
+  "Remove Duplicates from Sorted Array",
+  "Remove Duplicates from Sorted Array II",
+  "Majority Element",
+  "Rotate Array",
+  "Best Time to Buy and Sell Stock",
+  "Best Time to Buy and Sell Stock II",
+  "Jump Game",
+  "Jump Game II",
+  "H-Index",
+  "Insert Delete GetRandom O(1)",
+  "Product of Array Except Self",
+  "Gas Station",
+  "Candy",
+  "Trapping Rain Water",
+  "Roman to Integer",
+  "Integer to Roman",
+  "Length of Last Word",
+  "Longest Common Prefix",
+  "Reverse Words in a String",
+  "Zigzag Conversion",
+  "Find the Index of the First Occurrence in a String",
+  "Text Justification",
+  "Valid Palindrome",
+  "Is Subsequence",
+  "Two Sum II - Input Array Is Sorted",
+  "Container With Most Water",
+  "3Sum",
+  "Minimum Size Subarray Sum",
+  "Longest Substring Without Repeating Characters",
+  "Substring with Concatenation of All Words",
+  "Minimum Window Substring",
+  "Valid Sudoku",
+  "Spiral Matrix",
+  "Rotate Image",
+  "Set Matrix Zeroes",
+  "Game of Life",
+  "Ransom Note",
+  "Isomorphic Strings",
+  "Word Pattern",
+  "Valid Anagram",
+  "Group Anagrams",
+  "Two Sum",
+  "Happy Number",
+  "Contains Duplicate II",
+  "Longest Consecutive Sequence",
+  "Summary Ranges",
+  "Merge Intervals",
+  "Insert Interval",
+  "Minimum Number of Arrows to Burst Balloons",
+  "Valid Parentheses",
+  "Simplify Path",
+  "Min Stack",
+  "Evaluate Reverse Polish Notation",
+  "Basic Calculator",
+  "Linked List Cycle",
+  "Add Two Numbers",
+  "Merge Two Sorted Lists",
+  "Copy List with Random Pointer",
+  "Reverse Linked List II",
+  "Reverse Nodes in k-Group",
+  "Remove Nth Node From End of List",
+  "Remove Duplicates from Sorted List II",
+  "Rotate List",
+  "Partition List",
+  "LRU Cache",
+  "Maximum Depth of Binary Tree",
+  "Same Tree",
+  "Invert Binary Tree",
+  "Symmetric Tree",
+  "Construct Binary Tree from Preorder and Inorder Traversal",
+  "Construct Binary Tree from Inorder and Postorder Traversal",
+  "Populating Next Right Pointers in Each Node II",
+  "Flatten Binary Tree to Linked List",
+  "Path Sum",
+  "Sum Root to Leaf Numbers",
+  "Binary Tree Maximum Path Sum",
+  "Binary Search Tree Iterator",
+  "Count Complete Tree Nodes",
+  "Lowest Common Ancestor of a Binary Tree",
+  "Binary Tree Right Side View",
+  "Average of Levels in Binary Tree",
+  "Binary Tree Level Order Traversal",
+  "Binary Tree Zigzag Level Order Traversal",
+  "Minimum Absolute Difference in BST",
+  "Kth Smallest Element in a BST",
+  "Validate Binary Search Tree",
+  "Number of Islands",
+  "Surrounded Regions",
+  "Clone Graph",
+  "Evaluate Division",
+  "Course Schedule",
+  "Course Schedule II",
+  "Snakes and Ladders",
+  "Minimum Genetic Mutation",
+  "Word Ladder",
+  "Implement Trie (Prefix Tree)",
+  "Design Add and Search Words Data Structure",
+  "Word Search II",
+  "Letter Combinations of a Phone Number",
+  "Combinations",
+  "Permutations",
+  "Combination Sum",
+  "N-Queens II",
+  "Generate Parentheses",
+  "Word Search",
+  "Convert Sorted Array to Binary Search Tree",
+  "Sort List",
+  "Construct Quad Tree",
+  "Merge k Sorted Lists",
+  "Maximum Subarray",
+  "Maximum Sum Circular Subarray",
+  "Search Insert Position",
+  "Search a 2D Matrix",
+  "Find Peak Element",
+  "Search in Rotated Sorted Array",
+  "Find First and Last Position of Element in Sorted Array",
+  "Find Minimum in Rotated Sorted Array",
+  "Median of Two Sorted Arrays",
+  "Kth Largest Element in an Array",
+  "IPO",
+  "Find K Pairs with Smallest Sums",
+  "Find Median from Data Stream",
+  "Add Binary",
+  "Reverse Bits",
+  "Number of 1 Bits",
+  "Single Number",
+  "Single Number II",
+  "Bitwise AND of Numbers Range",
+  "Palindrome Number",
+  "Plus One",
+  "Factorial Trailing Zeroes",
+  "Sqrt(x)",
+  "Pow(x, n)",
+  "Max Points on a Line",
+  "Climbing Stairs",
+  "House Robber",
+  "Word Break",
+  "Coin Change",
+  "Longest Increasing Subsequence",
+  "Triangle",
+  "Minimum Path Sum",
+  "Unique Paths II",
+  "Longest Palindromic Substring",
+  "Interleaving String",
+  "Edit Distance",
+  "Best Time to Buy and Sell Stock III",
+  "Best Time to Buy and Sell Stock IV",
+  "Maximal Square"
+];
+
+export async function getStudyPlanData(slug: string): Promise<StudyPlanData | null> {
+  const plan = STUDY_PLANS[slug];
+  if (!plan) return null;
+
+  if (!isSupabaseConfigured()) {
+    let problems = sampleProblems
+      .map(sampleToListItem)
+      .filter((problem) => {
+        if (plan.slug === "leetcode-75") {
+          return LEETCODE_75_TITLES.includes(problem.title);
+        }
+        if (plan.slug === "top-150") {
+          return TOP_150_TITLES.includes(problem.title);
+        }
+        return problem.problem_tags?.some((pt) => plan.tags.includes(pt.tags.slug));
+      });
+
+    if (plan.slug === "leetcode-75") {
+      problems.sort((a, b) => LEETCODE_75_TITLES.indexOf(a.title) - LEETCODE_75_TITLES.indexOf(b.title));
+    } else if (plan.slug === "top-150") {
+      problems.sort((a, b) => TOP_150_TITLES.indexOf(a.title) - TOP_150_TITLES.indexOf(b.title));
+    } else {
+      problems = problems.slice(0, plan.limit);
+    }
+
+    return {
+      plan,
+      problems,
+      solvedCount: 0
+    };
+  }
+
+  const supabase = await createClient();
+  
+  let query = supabase
+    .from("problems")
+    .select("id, problem_number, title, slug, difficulty, is_premium, problem_tags(tags(name, slug))");
+
+  if (plan.slug === "leetcode-75") {
+    query = query.in("title", LEETCODE_75_TITLES);
+  } else if (plan.slug === "top-150") {
+    query = query.in("title", TOP_150_TITLES);
+  } else {
+    query = query
+      .in("problem_tags.tags.slug", plan.tags)
+      .order("problem_number", { ascending: true })
+      .limit(plan.limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching study plan problems:", error);
+    return null;
+  }
+
+  let items = (data ?? []) as unknown as ProblemListItem[];
+  
+  if (plan.slug === "leetcode-75") {
+    items.sort((a, b) => LEETCODE_75_TITLES.indexOf(a.title) - LEETCODE_75_TITLES.indexOf(b.title));
+  } else if (plan.slug === "top-150") {
+    items.sort((a, b) => TOP_150_TITLES.indexOf(a.title) - TOP_150_TITLES.indexOf(b.title));
+  }
+  
+  let solvedCount = 0;
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (user && items.length) {
+    const { data: progressRows, error: progressError } = await supabase
+      .from("user_problem_progress")
+      .select("problem_id, status")
+      .in("problem_id", items.map((item) => item.id));
+
+    if (!progressError && progressRows) {
+      const progressMap = new Map(progressRows.map((r) => [r.problem_id, r.status]));
+      items = items.map((item) => ({
+        ...item,
+        user_status: progressMap.get(item.id) ?? "NOT_STARTED"
+      }));
+      solvedCount = progressRows.filter((r) => r.status === "SOLVED").length;
+    }
+
+    const { data: bookmarksRows, error: bookmarksError } = await supabase
+      .from("bookmarks")
+      .select("problem_id")
+      .in("problem_id", items.map((item) => item.id));
+
+    if (!bookmarksError && bookmarksRows) {
+      const bookmarkedSet = new Set(bookmarksRows.map((r) => r.problem_id));
+      items = items.map((item) => ({
+        ...item,
+        is_bookmarked: bookmarkedSet.has(item.id)
+      }));
+    }
+  }
+
+  return {
+    plan,
+    problems: items,
+    solvedCount
+  };
+}
 

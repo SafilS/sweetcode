@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Script from "next/script";
 import { BookOpen, GraduationCap, LogOut, Search } from "lucide-react";
 import { signInWithGoogle, signOut } from "@/app/actions";
 import { isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/app/theme-toggle";
+import { SupportButton } from "@/app/support-button";
 import "./globals.css";
 
 
@@ -20,42 +20,34 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     : null;
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <Script
-          id="theme-loader"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem('sweetcode:theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (_) {}
-              })();
-            `
-          }}
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script src="/theme.js" />
       </head>
       <body>
+        <div className="space-bg-decor"></div>
         <header className="site-header">
           <Link className="brand" href="/">
-            <BookOpen aria-hidden="true" size={22} />
+            <div className="brand-glow"></div>
+            <BookOpen aria-hidden="true" size={22} className="brand-icon" />
             <span>SweetCode</span>
           </Link>
           <nav className="top-nav" aria-label="Primary">
-            <Link href="/problems">
-              <Search aria-hidden="true" size={18} />
-              Problems
-            </Link>
-            <Link href="/my-learning">
-              <GraduationCap aria-hidden="true" size={18} />
-              My Learning
-            </Link>
+            {user && (
+              <>
+                <Link href="/problems">
+                  <Search aria-hidden="true" size={18} />
+                  Problems
+                </Link>
+                <Link href="/my-learning">
+                  <GraduationCap aria-hidden="true" size={18} />
+                  My Learning
+                </Link>
+              </>
+            )}
             <ThemeToggle />
             {user ? (
               <form action={signOut}>
@@ -78,7 +70,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             )}
           </nav>
         </header>
-        {children}
+        
+        <div className="layout-content">
+          {children}
+        </div>
+        <SupportButton />
       </body>
     </html>
   );

@@ -1,25 +1,30 @@
 "use client";
 
-import { ArrowRight, Code2, Layers, NotepadText, Sparkles } from "lucide-react";
+import { ArrowRight, Code2, Layers, NotepadText, Sparkles, Cpu } from "lucide-react";
 import { signInWithGoogle } from "@/app/actions";
 
 export function LandingPage() {
   return (
     <div className="landing-wrapper">
+      {/* Decorative Orbs & Grid lines */}
+      <div className="cosmic-grid"></div>
+      <div className="glow-orb purple-glow"></div>
+      <div className="glow-orb cyan-glow"></div>
+      
       {/* Hero Section */}
       <section className="landing-hero">
         <div className="hero-left">
           <div className="badge-glow">
-            <Sparkles size={14} />
-            <span>Editorial-First Practice</span>
+            <Sparkles size={14} className="sparkle-icon" />
+            <span>Editorial-First Premium Practice</span>
           </div>
           <h1>
             Master Algorithms, <br />
-            <span className="gradient-text">Compare Clean Code</span>
+            <span className="gradient-text">Defy Gravity.</span>
           </h1>
           <p>
-            An immersive platform for studying algorithm solutions, comparing multilingual code implementations,
-            and writing private scratchpad notes. Built for developers who value deep understanding over speed.
+            Gain access to premium LeetCode questions and side-by-side multilingual solutions for free—no LeetCode Premium required. 
+            Compare implementations, write private scratchpad notes, and prepare effectively for interviews.
           </p>
           <form action={signInWithGoogle}>
             <button className="cta-button" type="submit">
@@ -30,56 +35,31 @@ export function LandingPage() {
         </div>
 
         <div className="hero-right">
-          {/* HD Unsplash Code Image Container */}
+          {/* 3D Cosmic Frame */}
           <div className="hd-image-frame">
+            <div className="cosmic-ring"></div>
             <img
-              src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop"
-              alt="High definition coding editor backdrop"
+              src="/images/antigravity_hero.png"
+              alt="Futuristic Antigravity terminal representation"
               className="hero-hd-img"
             />
-            {/* Overlay CSS-Animated Code Terminal Mockup */}
-            <div className="animated-terminal">
-              <div className="terminal-header">
-                <span className="dot red"></span>
-                <span className="dot yellow"></span>
-                <span className="dot green"></span>
-                <span className="title">two_sum.py</span>
-              </div>
-              <div className="terminal-body">
-                <span className="line-num">1</span>
-                <span className="code-kw">def</span> <span className="code-fn">twoSum</span>(nums: List[int], target: int) -&gt; List[int]:<br />
-                <span className="line-num">2</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;seen = &#123;&#125;<br />
-                <span className="line-num">3</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="code-kw">for</span> i, num <span className="code-kw">in</span> <span className="code-fn">enumerate</span>(nums):<br />
-                <span className="line-num">4</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff = target - num<br />
-                <span className="line-num">5</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="code-kw">if</span> diff <span className="code-kw">in</span> seen:<br />
-                <span className="line-num">6</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="code-kw">return</span> [seen[diff], i]<br />
-                <span className="line-num">7</span>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen[num] = i
-              </div>
-              <div className="animated-toast">
-                <Sparkles size={14} className="sparkle-toast" />
-                <span>Insight saved to Code Scratchpad!</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Grid Highlights Section */}
       <section className="landing-features">
-        <h2 className="section-title">Designed for Deep Learning</h2>
+        <div className="section-title-wrap">
+          <p className="eyebrow text-center">Core Platform Features</p>
+          <h2 className="section-title">Master the Art of Problem Solving</h2>
+        </div>
         <div className="features-grid">
           {/* Card 1 */}
           <div className="feature-card">
             <div className="img-container">
               <img
-                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
-                alt="Curated roads abstract pattern"
+                src="/images/pathway_feature.png"
+                alt="Curated pathways winding through nebulae space"
               />
               <div className="icon-overlay">
                 <Layers size={24} />
@@ -93,8 +73,8 @@ export function LandingPage() {
           <div className="feature-card">
             <div className="img-container">
               <img
-                src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop"
-                alt="Multilingual code blocks comparison screen"
+                src="/images/editorials_feature.png"
+                alt="Code comparison layout showing different tabs"
               />
               <div className="icon-overlay">
                 <Code2 size={24} />
@@ -108,8 +88,8 @@ export function LandingPage() {
           <div className="feature-card">
             <div className="img-container">
               <img
-                src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=1200&auto=format&fit=crop"
-                alt="Workspace with notebooks representing personal code scratchpad"
+                src="/images/scratchpad_feature.png"
+                alt="3D interactive notepad"
               />
               <div className="icon-overlay">
                 <NotepadText size={24} />
@@ -121,9 +101,55 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Premium Statistics or Badges showcasing Leetcode Premium Questions */}
+      <section className="premium-showcase-section">
+        <div className="premium-showcase-card">
+          <div className="premium-glow-bg"></div>
+          
+          <div className="premium-left-col">
+            <div className="badge-glow premium-accent-badge">
+              <Cpu size={14} />
+              <span>Democratizing Tech Prep</span>
+            </div>
+            <h2>Break the LeetCode Paywall for Free</h2>
+            <p className="premium-problem-statement">
+              <strong>The Challenge:</strong> Preparing for technical interviews often requires paid subscriptions to access advanced coding patterns—a cost that can be difficult to afford for students and developers on a tight budget.
+            </p>
+            <p className="premium-solution-statement">
+              <strong>Our Mission:</strong> SweetCode acts as a free, open companion. We provide accessible paths to premium-tier questions, structured study tracks, and optimal multi-language solutions to help every developer learn without financial limits.
+            </p>
+          </div>
+
+          <div className="premium-right-col">
+            <div className="value-benefit-card">
+              <div className="benefit-icon-wrapper">👑</div>
+              <div className="benefit-text">
+                <h4>Free Premium Access</h4>
+                <p>Unlock the high-frequency interview questions that other platforms hide behind paywalls.</p>
+              </div>
+            </div>
+            <div className="value-benefit-card">
+              <div className="benefit-icon-wrapper">🌐</div>
+              <div className="benefit-text">
+                <h4>Multilingual Code Solutions</h4>
+                <p>Compare optimal, clean implementations in Python, Java, C++, and Go side-by-side.</p>
+              </div>
+            </div>
+            <div className="value-benefit-card">
+              <div className="benefit-icon-wrapper">⚡</div>
+              <div className="benefit-text">
+                <h4>Zero-Friction Interface</h4>
+                <p>Enjoy a high-performance, ad-free environment engineered for focus and problem-solving.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Bottom Call to Action */}
       <section className="landing-cta">
         <div className="cta-box">
+          <div className="cta-glow-effect"></div>
           <h2>Start Refining Your Coding Skills Today</h2>
           <p>Create your personal profile to track progress, save custom scratchpads, and unlock all curated roadmaps.</p>
           <form action={signInWithGoogle}>

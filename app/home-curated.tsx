@@ -5,35 +5,45 @@ import { ArrowRight, Brain, Calendar, Compass, Flame, GraduationCap } from "luci
 
 type UserProps = {
   email?: string;
+  user_metadata?: {
+    full_name?: string;
+    name?: string;
+    given_name?: string;
+    user_name?: string;
+  };
 };
 
 export function HomeCurated({ user }: { user: UserProps }) {
-  const username = user.email ? user.email.split("@")[0] : "Coder";
+  const nameFromMetadata = user.user_metadata?.full_name || 
+                           user.user_metadata?.name || 
+                           user.user_metadata?.given_name || 
+                           user.user_metadata?.user_name;
+  const username = nameFromMetadata || (user.email ? user.email.split("@")[0] : "Coder");
 
   const studyPlans = [
     {
       title: "LeetCode 75",
       description: "A structured, highly recommended path covering core data structures, trees, DP, and graphs.",
-      tag: "array",
+      slug: "leetcode-75",
       icon: Brain,
       count: "75 Problems",
-      color: "blue"
+      color: "cyan"
     },
     {
       title: "Top Interview 150",
       description: "The ultimate compilation of classic technical questions asked in major company interviews.",
-      tag: "hash-table",
+      slug: "top-150",
       icon: GraduationCap,
       count: "150 Problems",
-      color: "gold"
+      color: "purple"
     },
     {
       title: "Dynamic Programming Classics",
       description: "Master bottom-up and top-down DP with selected classical optimization problems.",
-      tag: "dynamic-programming", // fallback if none, let's keep DP
+      slug: "dp-classics",
       icon: Flame,
       count: "25 Problems",
-      color: "purple"
+      color: "indigo"
     }
   ];
 
@@ -62,14 +72,18 @@ export function HomeCurated({ user }: { user: UserProps }) {
   ];
 
   return (
-    <main className="page-shell">
+    <main className="page-shell curated-dashboard">
+      <div className="cosmic-grid"></div>
+      <div className="glow-orb dashboard-orb-1"></div>
+      <div className="glow-orb dashboard-orb-2"></div>
+
       {/* Welcome Banner */}
-      <section className="welcome-banner">
+      <section className="welcome-banner glass-panel">
         <div className="banner-copy">
           <p className="eyebrow">Welcome back</p>
           <h1>Hello, {username} 👋</h1>
           <p>
-            Study curated algorithmic paths, review solutions across multiple languages, and build up your private coding knowledge base.
+            Get full access to premium LeetCode questions and side-by-side multilingual solutions for free—no LeetCode Premium subscription required.
           </p>
         </div>
         <div className="daily-challenge-box">
@@ -89,7 +103,10 @@ export function HomeCurated({ user }: { user: UserProps }) {
       {/* Study Plans */}
       <section className="study-plans-section">
         <div className="section-header-row">
-          <h2>Curated Study Plans</h2>
+          <div>
+            <p className="eyebrow">Curated Paths</p>
+            <h2>Study Plans</h2>
+          </div>
           <Link href="/problems" className="view-all-link">
             Browse all problems
             <Compass size={16} />
@@ -99,15 +116,16 @@ export function HomeCurated({ user }: { user: UserProps }) {
           {studyPlans.map((plan) => {
             const Icon = plan.icon;
             return (
-              <div key={plan.title} className={`plan-card ${plan.color}`}>
-                <div className="plan-icon">
-                  <Icon size={24} />
+              <div key={plan.title} className={`plan-card ${plan.color} glass-panel`}>
+                <div className="plan-glow-border"></div>
+                <div className="plan-icon-container">
+                  <Icon size={22} className="plan-icon" />
                 </div>
                 <h3>{plan.title}</h3>
                 <p>{plan.description}</p>
                 <div className="plan-meta">
                   <span>{plan.count}</span>
-                  <Link href={`/problems?tag=${plan.tag}`} className="plan-link">
+                  <Link href={`/study-plans/${plan.slug}`} className="plan-link">
                     Start Path
                     <ArrowRight size={14} />
                   </Link>
@@ -120,10 +138,15 @@ export function HomeCurated({ user }: { user: UserProps }) {
 
       {/* Featured Editorials */}
       <section className="editorials-section">
-        <h2>Learning Feed & Editorials</h2>
+        <div className="section-header-row">
+          <div>
+            <p className="eyebrow">Insights & Guides</p>
+            <h2>Learning Feed</h2>
+          </div>
+        </div>
         <div className="editorials-grid">
           {featuredArticles.map((article) => (
-            <article key={article.title} className="editorial-card">
+            <article key={article.title} className="editorial-card glass-panel">
               <div className="card-image-wrap">
                 <img src={article.image} alt={article.title} />
                 <span className="card-badge">{article.category}</span>
@@ -132,7 +155,6 @@ export function HomeCurated({ user }: { user: UserProps }) {
                 <span className="read-time">{article.readTime}</span>
                 <h3>{article.title}</h3>
                 <p>Learn core concepts, step-by-step trace guides, and complexity optimization strategies.</p>
-                {/* Visual mockup of links since we don't have static blogs */}
                 <Link href="/problems" className="article-btn">
                   Explore Related Problems
                   <ArrowRight size={14} />

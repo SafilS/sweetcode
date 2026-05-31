@@ -17,12 +17,14 @@
     "ioredis": "^5.11.0",
     "lucide-react": "latest",
     "next": "latest",
+    "nodemailer": "^8.0.10",
     "prismjs": "^1.30.0",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nodemailer": "^8.0.0",
     "@types/prismjs": "^1.26.6",
     "@types/react": "latest",
     "@types/react-dom": "latest",

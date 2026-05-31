@@ -57,7 +57,7 @@ export default async function ProblemDetailPage({
           {problem.is_premium ? (
             <span className="premium-badge">
               <LockKeyhole aria-hidden="true" size={14} />
-              LeetCode premium
+              Premium (Unlocked Free)
             </span>
           ) : null}
         </div>
