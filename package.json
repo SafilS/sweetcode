@@ -1,0 +1,34 @@
+{
+  "name": "sweetcode",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "import:problems": "tsx scripts/import-problems.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "@uiw/react-textarea-code-editor": "^3.1.1",
+    "ioredis": "^5.11.0",
+    "lucide-react": "latest",
+    "next": "latest",
+    "prismjs": "^1.30.0",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/prismjs": "^1.26.6",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}

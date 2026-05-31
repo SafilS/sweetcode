@@ -1,0 +1,35 @@
+[
+  {
+    "number": "0001",
+    "title": "Two Sum",
+    "difficulty": "Easy",
+    "tags": ["Array", "Hash Table"],
+    "is_premium": false,
+    "remark": "",
+    "link": "https://github.com/doocs/leetcode/blob/main/solution/0000-0099/0001.Two%20Sum/README_EN.md",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+    "examples": [
+      "Input: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].",
+      "Input: nums = [3,2,4], target = 6\nOutput: [1,2]"
+    ],
+    "constraints": [
+      "2 <= nums.length <= 104",
+      "-109 <= nums[i] <= 109",
+      "-109 <= target <= 109",
+      "Only one valid answer exists."
+    ],
+    "solutions": [
+      {
+        "approach": "Solution 1: Hash Table",
+        "explanation": "Store values already seen with their indexes. For each number, check whether its complement exists in the map.",
+        "time_complexity": "O(n)",
+        "space_complexity": "O(n)",
+        "code": {
+          "Python3": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        seen = {}\n        for i, x in enumerate(nums):\n            y = target - x\n            if y in seen:\n                return [seen[y], i]\n            seen[x] = i",
+          "Java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> seen = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int y = target - nums[i];\n            if (seen.containsKey(y)) return new int[] { seen.get(y), i };\n            seen.put(nums[i], i);\n        }\n        return new int[0];\n    }\n}",
+          "TypeScript": "function twoSum(nums: number[], target: number): number[] {\n    const seen = new Map<number, number>();\n    for (let i = 0; i < nums.length; i++) {\n        const y = target - nums[i];\n        if (seen.has(y)) return [seen.get(y)!, i];\n        seen.set(nums[i], i);\n    }\n    return [];\n}"
+        }
+      }
+    ]
+  }
+]
