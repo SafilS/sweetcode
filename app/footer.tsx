@@ -11,13 +11,13 @@ export function Footer() {
           </div>
           <p className="footer-tagline">Elevating coding practice into weightless problem solving.</p>
         </div>
-        
+
         <div className="footer-metadata">
           <div className="footer-meta-col">
             <h4>Developer</h4>
             <p className="developer-name">Mohammed Safil</p>
             <div className="contact-info">
-              <a href="mailto:mailtosafil@gmail.com" className="contact-item">
+              <a href="mailto:emailtosafil@gmail.com" className="contact-item">
                 <Mail size={14} />
                 <span>mailtosafil@gmail.com</span>
               </a>
@@ -55,7 +55,7 @@ export function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} SweetCode. Designed for Antigravity problem solving.</p>
+        <p>&copy; {new Date().getFullYear()} SweetCode. Designed for problem solving.</p>
       </div>
     </footer>
   );
