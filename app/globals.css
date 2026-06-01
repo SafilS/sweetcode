@@ -3338,6 +3338,27 @@ body.dark .problem-row.is-premium-row:hover,
   margin: 0;
 }
 
+.footer-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+.footer-bottom .footer-disclaimer {
+  max-width: 1000px;
+  margin: 0 auto 16px auto;
+  padding: 0 16px;
+}
+
+.footer-bottom .footer-disclaimer p {
+  font-size: 11px;
+  line-height: 1.65;
+  opacity: 0.6;
+  text-align: center;
+  color: var(--muted);
+}
+
 /* 3D Perspective Card Layouts */
 .hd-image-frame {
   perspective: 1200px;

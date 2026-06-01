@@ -1,4 +1,4 @@
-import { BookOpen, Mail, Phone, Trophy } from "lucide-react";
+import { Mail, Phone, Trophy } from "lucide-react";
 
 export function Footer() {
   return (
@@ -6,7 +6,7 @@ export function Footer() {
       <div className="footer-container">
         <div className="footer-brand">
           <div className="brand-logo">
-            <BookOpen size={20} />
+            <img src="/images/logo.png" alt="SweetCode Logo" className="footer-logo-img" />
             <span>SweetCode</span>
           </div>
           <p className="footer-tagline">Elevating coding practice into weightless problem solving.</p>
@@ -55,6 +55,11 @@ export function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
+        <div className="footer-disclaimer">
+          <p>
+            <strong>Disclaimer:</strong> SweetCode is an unofficial, independent educational platform created strictly for learning, study, and interview preparation purposes. It is not affiliated, associated, authorized, endorsed by, or in any way officially connected with LeetCode, Leapcode, or any of their subsidiaries or affiliates. All original LeetCode problems, titles, and trademarks are the exclusive property of their respective owners. Code walkthroughs, stubs, and problem descriptions are provided &quot;as-is&quot; without any warranties of any kind, and we do not guarantee their accuracy, completeness, or correctness. Users should refer to official sources for verified information.
+          </p>
+        </div>
         <p>&copy; {new Date().getFullYear()} SweetCode. Designed for problem solving.</p>
       </div>
     </footer>
