@@ -149,6 +149,14 @@ select {
   z-index: 1;
 }
 
+.brand-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+
 .top-nav {
   gap: 16px;
 }

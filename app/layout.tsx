@@ -11,7 +11,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SweetCode",
-  description: "A learning-first coding problem library."
+  description: "A learning-first coding problem library.",
+  icons: {
+    icon: "/images/logo.png",
+  }
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <header className="site-header">
           <Link className="brand" href="/">
             <div className="brand-glow"></div>
-            <BookOpen aria-hidden="true" size={22} className="brand-icon" />
+            <img src="/images/logo.png" alt="SweetCode Logo" className="brand-logo-img" />
             <span>SweetCode</span>
           </Link>
           <nav className="top-nav" aria-label="Primary">
