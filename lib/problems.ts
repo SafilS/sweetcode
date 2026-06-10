@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import sampleProblems from "@/data/sample-problems.json";
 import { isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
@@ -42,6 +44,13 @@ export type ProblemDetail = {
     constraints: string[];
   } | null;
   problem_tags: { tags: { name: string; slug: string } }[];
+  editorial_screenshots?: {
+    id: string;
+    image_url: string;
+    source_url: string | null;
+    caption: string | null;
+    sort_order: number;
+  }[];
   solution_approaches: {
     id: string;
     title: string;
@@ -155,7 +164,7 @@ export const getTags = cache(async () => {
     try {
       const cached = await redis.get("problems:tags");
       if (cached) return JSON.parse(cached);
-    } catch (_) {}
+    } catch {}
   }
 
   const supabase = await createClient();
@@ -166,7 +175,7 @@ export const getTags = cache(async () => {
   if (redis && result.length) {
     try {
       await redis.set("problems:tags", JSON.stringify(result), "EX", 86400); // 24 hours
-    } catch (_) {}
+    } catch {}
   }
 
   return result;
@@ -215,7 +224,7 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
     try {
       const cached = await redis.get(cacheKey);
       if (cached) cachedData = JSON.parse(cached);
-    } catch (_) {}
+    } catch {}
   }
 
   let items: ProblemListItem[] = [];
@@ -261,7 +270,7 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
     if (redis && items.length) {
       try {
         await redis.set(cacheKey, JSON.stringify({ items, total }), "EX", 3600); // 1 hour
-      } catch (_) {}
+      } catch {}
     }
   }
 
@@ -311,11 +320,69 @@ export const getProblems = cache(async (filters: { difficulty?: string; tag?: st
   };
 });
 
+let cachedCsvScreenshots: Map<string, { id: string; image_url: string; source_url: string | null; caption: string | null; sort_order: number }[]> | null = null;
+
+async function getLocalCsvScreenshots() {
+  if (cachedCsvScreenshots) return cachedCsvScreenshots;
+
+  const map = new Map<string, { id: string; image_url: string; source_url: string | null; caption: string | null; sort_order: number }[]>();
+  try {
+    const csvPath = path.join(process.cwd(), "leetcode_editorial_screenshots.csv");
+    const content = await readFile(csvPath, "utf8");
+    const lines = content.split(/\r?\n/).filter((line) => line.trim());
+
+    for (const [index, line] of lines.entries()) {
+      if (index === 0 && line.startsWith("problem_number,")) continue;
+
+      const parts = line.split(",");
+      if (parts.length < 5) continue;
+
+      const problemNumber = parts[0]?.trim();
+      const sourceUrl = parts.at(-1)?.trim();
+      const folder = parts.at(-2)?.trim();
+      const problemTitle = parts[1]?.trim();
+      const screenshotFilename = parts.slice(2, -2).join(",").trim();
+
+      if (!problemNumber || !problemTitle || !folder || !sourceUrl) continue;
+
+      const normNum = String(Number(problemNumber));
+
+      // Build image URL
+      const normFilename = screenshotFilename.toLowerCase().endsWith(".png")
+        ? screenshotFilename
+        : `${problemNumber.padStart(3, "0")}. ${problemTitle}.png`;
+      const encodedFolder = encodeURIComponent(folder).replace(/[!'()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+      const encodedFilename = encodeURIComponent(normFilename).replace(/[!'()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+      const imageUrl = `https://raw.githubusercontent.com/akhilkammila/leetcode-screenshotter/main/editorial-screenshots/${encodedFolder}/${encodedFilename}`;
+
+      if (!map.has(normNum)) {
+        map.set(normNum, []);
+      }
+      map.get(normNum)!.push({
+        id: `${normNum}-${index}`,
+        image_url: imageUrl,
+        source_url: sourceUrl,
+        caption: `LeetCode editorial screenshot for ${problemTitle}`,
+        sort_order: index
+      });
+    }
+  } catch (error) {
+    console.error("Error parsing local screenshots CSV:", error);
+  }
+
+  cachedCsvScreenshots = map;
+  return map;
+}
+
 export const getProblemBySlug = cache(async (slug: string) => {
   if (!isSupabaseConfigured()) {
     const sample = sampleProblems.find((problem) => slugify(problem.title) === slug);
     if (!sample) throw new Error("Problem not found");
-    return sampleToDetail(sample);
+    const detail = sampleToDetail(sample);
+    const localScreenshots = await getLocalCsvScreenshots();
+    const normNum = String(Number(detail.problem_number));
+    detail.editorial_screenshots = localScreenshots.get(normNum) ?? [];
+    return detail;
   }
 
   const cacheKey = `problem:detail:${slug}`;
@@ -325,7 +392,7 @@ export const getProblemBySlug = cache(async (slug: string) => {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return JSON.parse(cached);
-    } catch (_) {}
+    } catch {}
   }
 
   const supabase = await createClient();
@@ -343,6 +410,7 @@ export const getProblemBySlug = cache(async (slug: string) => {
         source_link,
         problem_texts(description, examples, constraints),
         problem_tags(tags(name, slug)),
+        editorial_screenshots(id, image_url, source_url, caption, sort_order),
         solution_approaches(
           id,
           title,
@@ -370,10 +438,16 @@ export const getProblemBySlug = cache(async (slug: string) => {
     )
   }));
 
+  if (problem.editorial_screenshots) {
+    problem.editorial_screenshots = [...problem.editorial_screenshots].sort(
+      (a, b) => a.sort_order - b.sort_order
+    );
+  }
+
   if (redis) {
     try {
       await redis.set(cacheKey, JSON.stringify(problem), "EX", 86400); // 24 hours
-    } catch (_) {}
+    } catch {}
   }
 
   return problem;
@@ -486,7 +560,7 @@ export const getMyLearningDashboard = cache(async (): Promise<MyLearningDashboar
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return JSON.parse(cached);
-    } catch (_) {}
+    } catch {}
   }
 
   const [progressResult, bookmarksResult, notesResult, easyCount, mediumCount, hardCount] = await Promise.all([
@@ -573,7 +647,7 @@ export const getMyLearningDashboard = cache(async (): Promise<MyLearningDashboar
   if (redis) {
     try {
       await redis.set(cacheKey, JSON.stringify(dashboardData), "EX", 7200); // 2 hours
-    } catch (_) {}
+    } catch {}
   }
 
   return dashboardData;

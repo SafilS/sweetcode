@@ -12,6 +12,7 @@ import type { ProblemDetail } from "@/lib/problems";
 import { isSupabaseConfigured } from "@/lib/config";
 import { ProblemDiscussion } from "@/app/problems/[slug]/discussion";
 import { ProblemTabs } from "@/app/problems/[slug]/problem-tabs";
+import { ProblemEditorial } from "@/app/problems/[slug]/editorial";
 
 
 function formatConstraint(text: string) {
@@ -78,12 +79,10 @@ export default async function ProblemDetailPage({
           signedIn={signedIn}
           slug={problem.slug}
         />
-        {problem.source_link ? (
-          <a className="source-link" href={problem.source_link} target="_blank" rel="noreferrer">
-            Source
-            <ExternalLink aria-hidden="true" size={16} />
-          </a>
-        ) : null}
+        <a className="source-link" href={`https://leetcode.com/problems/${problem.slug}/description/`} target="_blank" rel="noreferrer">
+          Source
+          <ExternalLink aria-hidden="true" size={16} />
+        </a>
       </aside>
 
       <article className="problem-content">
@@ -121,6 +120,13 @@ export default async function ProblemDetailPage({
                 slug={problem.slug}
               />
             </>
+          }
+          editorialNode={
+            <ProblemEditorial
+              screenshots={problem.editorial_screenshots}
+              problemTitle={problem.title}
+              problemSlug={problem.slug}
+            />
           }
           solutionsNode={
             <div className="solutions-tab-inner">

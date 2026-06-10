@@ -7,8 +7,12 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setTimeout(() => setTheme(isDark ? "dark" : "light"), 0);
+    const storedTheme = localStorage.getItem("sweetcode:theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const nextTheme = storedTheme === "dark" || (!storedTheme && prefersDark) ? "dark" : "light";
+
+    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    window.setTimeout(() => setTheme(nextTheme), 0);
   }, []);
 
   function toggleTheme() {

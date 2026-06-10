@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, GraduationCap, LogOut, Search } from "lucide-react";
+import { GraduationCap, LogOut, Search, Shield, Trophy } from "lucide-react";
 import { signInWithGoogle, signOut } from "@/app/actions";
 import { isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +28,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <script src="/theme.js" />
       </head>
       <body>
         <div className="space-bg-decor"></div>
@@ -49,6 +48,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <GraduationCap aria-hidden="true" size={18} />
                   My Learning
                 </Link>
+                <Link href="/assessment">
+                  <Trophy aria-hidden="true" size={18} />
+                  Assessment
+                </Link>
+                {user.email === "mohammedsafil039@gmail.com" && (
+                  <Link href="/admin">
+                    <Shield aria-hidden="true" size={18} />
+                    Admin
+                  </Link>
+                )}
               </>
             )}
             <ThemeToggle />

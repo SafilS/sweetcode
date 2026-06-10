@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ArrowRight, Brain, Calendar, Compass, Flame, GraduationCap } from "lucide-react";
+import { getLearningFeed, getDailyChallenge } from "@/app/actions";
+import { useEffect, useState } from "react";
 
 type UserProps = {
   email?: string;
@@ -51,25 +53,61 @@ export function HomeCurated({ user }: { user: UserProps }) {
     {
       title: "Demystifying the Sliding Window",
       category: "Algorithms",
-      readTime: "6 min read",
+      meta: "6 min read",
       image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=600&auto=format&fit=crop",
-      slug: "sliding-window-guide"
+      url: "/problems",
+      description: "Learn core concepts, step-by-step trace guides, and complexity optimization strategies."
     },
     {
       title: "Recursion vs Iteration: When to Memoize",
       category: "Optimization",
-      readTime: "8 min read",
+      meta: "8 min read",
       image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=600&auto=format&fit=crop",
-      slug: "memoization-tips"
+      url: "/problems",
+      description: "Learn core concepts, step-by-step trace guides, and complexity optimization strategies."
     },
     {
       title: "Essential Graph Algorithms for Interviews",
       category: "Data Structures",
-      readTime: "10 min read",
+      meta: "10 min read",
       image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop",
-      slug: "graph-traversals"
+      url: "/problems",
+      description: "Learn core concepts, step-by-step trace guides, and complexity optimization strategies."
     }
   ];
+
+  const [articles, setArticles] = useState<any[]>(featuredArticles);
+  const [loadingFeed, setLoadingFeed] = useState(true);
+  const [dailyChallenge, setDailyChallenge] = useState<any>({
+    title: "Two Sum",
+    slug: "two-sum",
+    difficulty: "Easy",
+    url: "/problems/two-sum",
+    isLocal: true,
+    description: "Find indices of two numbers that add up to a specific target."
+  });
+
+  useEffect(() => {
+    async function loadFeedAndDaily() {
+      try {
+        const [dynamicFeed, daily] = await Promise.all([
+          getLearningFeed(),
+          getDailyChallenge()
+        ]);
+        if (dynamicFeed && dynamicFeed.length > 0) {
+          setArticles(dynamicFeed);
+        }
+        if (daily) {
+          setDailyChallenge(daily);
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic feeds:", err);
+      } finally {
+        setLoadingFeed(false);
+      }
+    }
+    loadFeedAndDaily();
+  }, []);
 
   return (
     <main className="page-shell curated-dashboard">
@@ -91,12 +129,24 @@ export function HomeCurated({ user }: { user: UserProps }) {
             <Calendar size={14} />
             <span>Daily Practice</span>
           </div>
-          <h3>Two Sum</h3>
-          <p>Find indices of two numbers that add up to a specific target.</p>
-          <Link href="/problems/two-sum" className="challenge-btn">
-            Solve Challenge
-            <ArrowRight size={16} />
-          </Link>
+          <h3>{dailyChallenge.title}</h3>
+          <p>{dailyChallenge.description}</p>
+          {dailyChallenge.isLocal ? (
+            <Link href={dailyChallenge.url} className="challenge-btn">
+              Solve Challenge
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <a 
+              href={dailyChallenge.url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="challenge-btn"
+            >
+              Solve on LeetCode
+              <ArrowRight size={16} />
+            </a>
+          )}
         </div>
       </section>
 
@@ -145,20 +195,32 @@ export function HomeCurated({ user }: { user: UserProps }) {
           </div>
         </div>
         <div className="editorials-grid">
-          {featuredArticles.map((article) => (
+          {articles.map((article) => (
             <article key={article.title} className="editorial-card glass-panel">
               <div className="card-image-wrap">
                 <img src={article.image} alt={article.title} />
                 <span className="card-badge">{article.category}</span>
               </div>
               <div className="card-content">
-                <span className="read-time">{article.readTime}</span>
+                <span className="read-time">{article.meta}</span>
                 <h3>{article.title}</h3>
-                <p>Learn core concepts, step-by-step trace guides, and complexity optimization strategies.</p>
-                <Link href="/problems" className="article-btn">
-                  Explore Related Problems
-                  <ArrowRight size={14} />
-                </Link>
+                <p>{article.description}</p>
+                {article.url.startsWith("http") ? (
+                  <a 
+                    href={article.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="article-btn"
+                  >
+                    Read Article
+                    <ArrowRight size={14} />
+                  </a>
+                ) : (
+                  <Link href={article.url} className="article-btn">
+                    Explore Problems
+                    <ArrowRight size={14} />
+                  </Link>
+                )}
               </div>
             </article>
           ))}

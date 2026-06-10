@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Code2, MessageSquare } from "lucide-react";
+import { BookOpen, Code2, MessageSquare, Newspaper } from "lucide-react";
 
 interface ProblemTabsProps {
   descriptionNode: React.ReactNode;
+  editorialNode: React.ReactNode;
   solutionsNode: React.ReactNode;
   discussionNode: React.ReactNode;
 }
 
-type TabType = "description" | "solutions" | "discussion";
+type TabType = "description" | "editorial" | "solutions" | "discussion";
 
 export function ProblemTabs({
   descriptionNode,
+  editorialNode,
   solutionsNode,
   discussionNode
 }: ProblemTabsProps) {
@@ -20,6 +22,7 @@ export function ProblemTabs({
 
   const tabs: { type: TabType; label: string; icon: typeof BookOpen }[] = [
     { type: "description", label: "Description", icon: BookOpen },
+    { type: "editorial", label: "Editorial", icon: Newspaper },
     { type: "solutions", label: "Solutions", icon: Code2 },
     { type: "discussion", label: "Discussion", icon: MessageSquare }
   ];
@@ -49,6 +52,9 @@ export function ProblemTabs({
       <div className="problem-tabs-content">
         <div className={`tab-panel ${activeTab === "description" ? "active" : ""}`}>
           {descriptionNode}
+        </div>
+        <div className={`tab-panel ${activeTab === "editorial" ? "active" : ""}`}>
+          {editorialNode}
         </div>
         <div className={`tab-panel ${activeTab === "solutions" ? "active" : ""}`}>
           {solutionsNode}
